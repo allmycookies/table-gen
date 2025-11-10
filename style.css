@@ -209,6 +209,23 @@ button.secondary:hover {
     table-layout: fixed;
     background: white; /* Wird von JS überschrieben */
 }
+#top-table-preview {
+    margin-bottom: 5mm;
+}
+
+#top-table-preview textarea {
+    width: 100%;
+    height: 100%;
+    border: none;
+    resize: none;
+    padding: 0;
+    margin: 0;
+    font-family: inherit;
+    font-size: inherit;
+    color: inherit;
+    background-color: transparent;
+}
+
 #table-preview th, #table-preview td {
     /* Ränder werden von JS inline gesetzt */
     padding: 8px;
