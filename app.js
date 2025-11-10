@@ -47,6 +47,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const borderRightCheckbox = document.getElementById('border-right');
     const borderBottomCheckbox = document.getElementById('border-bottom');
     const borderLeftCheckbox = document.getElementById('border-left');
+    const alignLeftButton = document.getElementById('align-left');
+    const alignCenterButton = document.getElementById('align-center');
+    const alignRightButton = document.getElementById('align-right');
     // (Design DOM-Elemente)
     const logoSelect = document.getElementById('logo-select');
     const logoHeightInput = document.getElementById('logo-height');
@@ -190,7 +193,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 fontSize: '12pt',
                 fontColor: '#000000',
                 cellData: [],
-                borders: {}
+                borders: {},
+                aligns: {}
             }
         };
         applyConfig(defaultConfig);
@@ -226,6 +230,9 @@ document.addEventListener('DOMContentLoaded', () => {
         borderRightCheckbox.addEventListener('change', updateBorders);
         borderBottomCheckbox.addEventListener('change', updateBorders);
         borderLeftCheckbox.addEventListener('change', updateBorders);
+        alignLeftButton.addEventListener('click', () => updateAlignment('left'));
+        alignCenterButton.addEventListener('click', () => updateAlignment('center'));
+        alignRightButton.addEventListener('click', () => updateAlignment('right'));
     }
 
     // --- Logo-Funktionen ---
@@ -360,7 +367,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 fontSize: topFontSizeInput.value,
                 fontColor: topFontColorInput.value,
                 cellData: getTopTableCellData(),
-                borders: currentConfig.topTable.borders || {}
+                borders: currentConfig.topTable.borders || {},
+                aligns: currentConfig.topTable.aligns || {}
             }
         };
     }
@@ -539,7 +547,8 @@ document.addEventListener('DOMContentLoaded', () => {
             fontFamily,
             fontSize,
             fontColor,
-            borders
+            borders,
+            aligns
         } = currentConfig.topTable;
         const {
             borderWidth,
@@ -557,22 +566,41 @@ document.addEventListener('DOMContentLoaded', () => {
         for (let r = 0; r < rows; r++) {
             tableHTML += `<tr style="height: ${rowHeight};">`;
             for (let c = 0; c < cols; c++) {
-                const cellValue = cellData && cellData[r] && cellData[r][c] ? cellData[r][c] : '';
                 const cellId = `${r}-${c}`;
+                const cellValue = cellData && cellData[r] && cellData[r][c] ? cellData[r][c] : '';
                 const cellBorders = borders && borders[cellId] ? borders[cellId] : { top: true, right: true, bottom: true, left: true };
+                const cellAlign = aligns && aligns[cellId] ? aligns[cellId] : 'left';
 
                 let cellStyle = `
                     background-color: ${bgColor};
                     font-family: ${fontFamily};
                     font-size: ${fontSize};
                     color: ${fontColor};
-                    padding: 2mm 3mm;
+                    padding: 0 3mm;
                     border-top: ${cellBorders.top ? `${borderWidth} solid ${borderColor}` : 'none'};
                     border-right: ${cellBorders.right ? `${borderWidth} solid ${borderColor}` : 'none'};
                     border-bottom: ${cellBorders.bottom ? `${borderWidth} solid ${borderColor}` : 'none'};
                     border-left: ${cellBorders.left ? `${borderWidth} solid ${borderColor}` : 'none'};
+                    text-align: ${cellAlign};
+                    vertical-align: middle;
+                    overflow: hidden;
+                    white-space: nowrap;
                 `;
-                tableHTML += `<td style="${cellStyle}" data-row="${r}" data-col="${c}"><textarea data-row="${r}" data-col="${c}" style="width: 100%; height: 100%; border: none; resize: none; background-color: transparent; font-family: inherit; font-size: inherit; color: inherit;">${cellValue}</textarea></td>`;
+                let textareaStyle = `
+                    width: 100%;
+                    height: 100%;
+                    border: none;
+                    resize: none;
+                    background-color: transparent;
+                    font-family: inherit;
+                    font-size: inherit;
+                    color: inherit;
+                    text-align: ${cellAlign};
+                    vertical-align: middle;
+                    padding: 0;
+                    margin: 0;
+                `;
+                tableHTML += `<td style="${cellStyle}" data-row="${r}" data-col="${c}"><textarea data-row="${r}" data-col="${c}" style="${textareaStyle}">${cellValue}</textarea></td>`;
             }
             tableHTML += '</tr>';
         }
@@ -799,11 +827,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const cellId = `${selectedTopTableCell.row}-${selectedTopTableCell.col}`;
         const borders = currentConfig.topTable.borders[cellId] || { top: true, right: true, bottom: true, left: true };
+        const align = currentConfig.topTable.aligns[cellId] || 'left';
 
         borderTopCheckbox.checked = borders.top;
         borderRightCheckbox.checked = borders.right;
         borderBottomCheckbox.checked = borders.bottom;
         borderLeftCheckbox.checked = borders.left;
+
+        [alignLeftButton, alignCenterButton, alignRightButton].forEach(btn => btn.classList.remove('primary'));
+        if (align === 'left') alignLeftButton.classList.add('primary');
+        if (align === 'center') alignCenterButton.classList.add('primary');
+        if (align === 'right') alignRightButton.classList.add('primary');
     }
 
     function updateBorders() {
@@ -811,7 +845,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const cellId = `${selectedTopTableCell.row}-${selectedTopTableCell.col}`;
 
-        // Initialize border object for the cell if it doesn't exist
+        if (!currentConfig.topTable.borders) {
+            currentConfig.topTable.borders = {};
+        }
         if (!currentConfig.topTable.borders[cellId]) {
             currentConfig.topTable.borders[cellId] = { top: true, right: true, bottom: true, left: true };
         }
@@ -823,7 +859,23 @@ document.addEventListener('DOMContentLoaded', () => {
             left: borderLeftCheckbox.checked
         };
 
-        renderTopTable(); // Re-render to show border changes
+        renderTopTable();
+    }
+
+    function updateAlignment(align) {
+        if (!selectedTopTableCell) return;
+
+        const cellId = `${selectedTopTableCell.row}-${selectedTopTableCell.col}`;
+        if (!currentConfig.topTable.aligns) {
+            currentConfig.topTable.aligns = {};
+        }
+        currentConfig.topTable.aligns[cellId] = align;
+
+        renderTopTable();
+        // Re-show controls to update button highlighting
+        const container = currentConfig.topTable.position === 'top' ? topTablePreview : bottomTablePreview;
+        const selectedCell = container.querySelector(`td[data-row="${selectedTopTableCell.row}"][data-col="${selectedTopTableCell.col}"]`);
+        if (selectedCell) showBorderControls(selectedCell);
     }
 
     // --- Druck- & Berechnungs-Logik ---
