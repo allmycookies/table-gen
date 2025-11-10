@@ -1,0 +1,346 @@
+/* --- Globales Box-Model-Reset --- */
+html {
+  box-sizing: border-box;
+}
+*, *:before, *:after {
+  box-sizing: inherit;
+}
+
+/* --- Basis-Stile --- */
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+    background-color: #d3d3d3; /* MODIFIZIERT: Grauer Hintergrund für die Webseite */
+    color: #333;
+    margin: 0;
+    padding: 20px;
+    /* BG-Farbe (Blatt) wird von JS auf #table-preview (Vorschau) und body (Druck) angewendet */
+}
+h1, h2, h3 { color: #111;
+}
+.box {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 20px;
+    background-color: #FFFFFF; /* HINZUGEFÜGT: Boxen weiß abheben */
+}
+legend {
+    background-color: #f5f5f5;
+    /* MODIFIZIERT: Kompakter */
+    height: auto; /* War 40px */
+    line-height: normal; /* War 0px */
+}
+fieldset.box { 
+    padding-top: 10px;
+    /* MODIFIZIERT: Kompakter */
+    padding: 10px; /* War 20px */
+}
+fieldset.box legend { 
+    /* MODIFIZIERT: Kompakter */
+    padding: 5px 10px; /* War 0 10px */
+}
+
+/* --- MODIFIZIERTES Layout (2 Spalten) --- */
+.container-grid {
+    display: grid;
+    /* Linke Spalte (min 450px) | Rechte Spalte (flexibel) */
+    grid-template-columns: minmax(450px, 1fr) 1.8fr;
+    gap: 20px;
+    max-width: 1800px; /* Breiteres Layout für 2 Spalten */
+    margin: 0 auto;
+}
+
+/* NEU: Spaltendefinitionen */
+.column-left, .column-right {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    min-width: 0; /* Verhindert Überlauf von Grid-Kindern */
+}
+
+/* NEU: Responsivität für das Haupt-Grid */
+@media (max-width: 1200px) {
+    .container-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+
+/* --- ENTFERNT: Altes .controls-grid --- */
+/*
+.controls-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+@media (max-width: 900px) {
+    .controls-grid {
+        grid-template-columns: 1fr;
+    }
+}
+*/
+
+/* --- Formular-Steuerung --- */
+.form-group {
+    display: flex;
+    flex-wrap: wrap; 
+    /* MODIFIZIERT: Kompakter */
+    gap: 5px; /* War 10px */
+    margin-bottom: 8px; /* War 15px */
+    align-items: center;
+}
+/* Color-Inputs kleiner machen */
+input[type="color"] {
+    width: 50px;
+    height: 38px;
+    padding: 2px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+input[type="text"], input[type="number"], select {
+    /* MODIFIZIERT: Kompakter */
+    padding: 4px 8px; /* War 8px 12px */
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
+}
+input[type="number"] { width: 60px; }
+
+/* Button-Stile */
+button {
+    /* MODIFIZIERT: Kompakter */
+    padding: 5px 10px; /* War 8px 15px */
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+}
+button.primary, #btn-generate { 
+    background-color: #007bff; 
+    color: white;
+}
+button.danger { 
+    background-color: #dc3545; 
+    color: white; 
+}
+button.secondary {
+    background-color: #6c757d;
+    color: white;
+}
+button.secondary:hover {
+    background-color: #5a6268;
+}
+
+
+/* --- Logo-Vorschau (klein, bei den Einstellungen) --- */
+#logo-preview img {
+    max-height: 40px;
+    border: 1px dashed #ccc;
+    background: #f9f9f9;
+}
+
+/* --- Dynamische Spalten-Steuerung (mit 4 Spalten) --- */
+#dynamic-controls h4 { 
+    /* MODIFIZIERT: Kompakter */
+    margin-bottom: 5px; /* War 10px */
+}
+.col-control-group {
+    display: grid;
+    /* #, Align, Header, Width */
+    grid-template-columns: 30px 4fr 1fr 1fr;
+    gap: 10px;
+    /* MODIFIZIERT: Kompakter */
+    margin-bottom: 4px; /* War 8px */
+    align-items: center;
+}
+.col-control-group label { font-weight: bold;
+}
+/* Spezial-Grid für 2. Header (ohne Align) */
+.col-control-group-simple {
+    display: grid;
+    grid-template-columns: 30px 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 8px;
+    align-items: center;
+}
+
+
+/* --- Vorschau & Merge-Steuerung --- */
+.preview-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.merge-controls {
+    display: flex;
+    flex-wrap: wrap; 
+    gap: 10px; 
+    align-items: center;
+    /* MODIFIZIERT: Kompakter */
+    padding: 5px 10px; /* War 10px 15px */
+    background: #fdfdea;
+    border: 1px solid #e6db55;
+    border-radius: 4px;
+    margin-bottom: 15px;
+}
+.merge-controls p {
+    margin: 0;
+    margin-right: auto; 
+    flex-basis: 100%;
+}
+@media (min-width: 768px) {
+    .merge-controls p {
+        flex-basis: auto;
+    }
+}
+
+/* MODIFIZIERT: 80% Zoom für die Tabellen-Vorschau */
+#table-preview-wrapper {
+    border: 1px dashed #aaa;
+    padding: 10px;
+    margin-top: 15px;
+    overflow-x: auto;
+    position: relative;
+    zoom: 80%; /* NEU: Verkleinerte Vorschau (nur Tabelle) */
+}
+#table-preview table {
+    /* width: 100%; -> Entfernt, damit mm-Angaben absolut sind */
+    border-collapse: collapse;
+    table-layout: fixed;
+    background: white; /* Wird von JS überschrieben */
+}
+#table-preview th, #table-preview td {
+    /* Ränder werden von JS inline gesetzt */
+    padding: 8px;
+    vertical-align: top;
+    cursor: pointer;
+    overflow-wrap: break-word; /* Verhindert "Sprengen" der Zelle */
+}
+#table-preview th { 
+    background-color: #eee;
+    /* Standard, wird von JS überschrieben */
+}
+/* Visuelles Feedback für Zell-Auswahl */
+#table-preview td.selection-start,
+#table-preview th.selection-start {
+    background-color: #007bff !important;
+    color: white;
+}
+#table-preview td.selection-end,
+#table-preview th.selection-end {
+    background-color: #5ea5ff !important;
+}
+
+/* --- KORRIGIERT: Einklappbare Fieldsets --- */
+fieldset.collapsible > legend {
+    cursor: pointer;
+    user-select: none;
+}
+
+/* KORRIGIERT: h3 innerhalb der Legende formatieren und Margins entfernen */
+fieldset.collapsible > legend h3 {
+    margin: 0;
+    padding: 0;
+    display: inline-block; /* Hält es in einer Zeile mit dem Pfeil */
+    font-weight: bold; /* Setzt die Schriftstärke für den Text */
+}
+
+/* KORRIGIERT: Pfeil VOR das h3-Element setzen */
+fieldset.collapsible > legend h3::before {
+    content: '▼ ';
+    font-family: monospace;
+    display: inline-block;
+    width: 1.2em;
+    font-weight: bold; /* Stellt sicher, dass der Pfeil fett ist */
+}
+
+/* Versteckter Zustand (Inhalt ausblenden) */
+fieldset.collapsible[data-collapsed="true"] > *:not(legend) {
+    display: none;
+}
+
+/* KORRIGIERT: Pfeil-Richtung im geschlossenen Zustand ändern */
+fieldset.collapsible[data-collapsed="true"] > legend h3::before {
+    content: '► ';
+}
+
+
+/* --- DRUCK-STILE --- */
+
+/* Logo-Wrapper (wird für Live-Vorschau UND Druck verwendet) */
+#print-header-wrapper {
+    /* display: none;
+       <-- KORREKTUR: Entfernt, damit die Live-Vorschau funktioniert */
+    display: block; /* Standardmäßig sichtbar, JS leert ihn bei Bedarf */
+    margin-bottom: 5mm; /* Platz zwischen Logo und Tabelle */
+    /* Die Ausrichtung (links/mitte/rechts) wird von JS (updateLogoPreview) via inline style.textAlign gesetzt */
+}
+
+/* Basis-Stile für das Logo-Bild (in der großen Vorschau/Druck) */
+#print-header-wrapper img {
+    /* Die wichtigsten Stile (height, max-width, display: inline-block)
+       werden jetzt konsistent von app.js (updateLogoPreview) inline gesetzt,
+       damit die Live-Vorschau exakt der Druck-Definition (handlePrint) entspricht.
+    */
+}
+
+
+@media print {
+    
+    /* Alle Steuerelemente und Knöpfe ausblenden */
+    body > h1,
+    /* MODIFIZIERT: .container-grid statt .controls-grid */
+    .column-left, 
+    .controls,
+    .preview-header,
+    .merge-controls,
+    fieldset, /* Alle fieldsets (Branding, Design, etc.) ausblenden */
+    .import-export {
+        display: none;
+    }
+    
+    .container-grid {
+        display: block; /* Ändert von 'grid' zu 'block' */
+        grid-template-columns: none; /* Entfernt die Spaltendefinition */
+        gap: 0;
+    }
+    
+    /* Logo-Wrapper im Druck sichtbar machen (ist jetzt redundant, da Standard 'block') */
+    /*
+    #print-header-wrapper {
+        display: block;
+    }
+    */
+
+    body {
+        margin: 0;
+        padding: 0;
+        background: none; /* JS setzt die Farbe, aber sicher ist sicher */
+    }
+    .preview-container {
+        width: 100%;
+        margin: 0;
+        padding: 0;
+        border: none;
+        box-shadow: none; 
+    }
+    
+    /* WICHTIG: Wrapper für den Padding-Workaround */
+    #table-preview-wrapper {
+        border: none;
+        margin: 0;
+        overflow: hidden; /* Stellt sicher, dass nichts überläuft */
+        box-sizing: border-box;
+        zoom: 100%; /* NEU: Zoom im Druck auf 100% zurücksetzen */
+    }
+    
+    #table-preview table {
+        table-layout: fixed;
+    }
+    
+    /* Farben/Hintergründe im Druck erzwingen */
+    * {
+        -webkit-print-color-adjust: exact !important;
+        color-adjust: exact !important;
+    }
+}

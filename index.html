@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <title>Tabellen-Formular-Generator v1.4</title>
+    <link rel="stylesheet" href="style.css">
+    <style id="print-style-sheet"></style>
+</head>
+<body>
+
+    <h1>Tabellen-Formular-Generator v3 (JSON-Speicher)</h1>
+
+    <div class="container-grid">
+        
+        <div class="column-left">
+            
+            <fieldset class="main-controls box collapsible" data-collapsed="true">
+                <legend><h3>🗂️ Gespeicherte Server-Layouts</h3></legend>
+                <div class="form-group">
+ 
+                   <select id="layout-select" aria-label="Gespeichertes Layout"></select>
+                    <button id="btn-load">Laden</button>
+                    <button id="btn-delete" class="danger">Löschen</button>
+                </div>
+                <hr>
+   
+                 <div class="form-group">
+                    <input type="text" id="layout-name" placeholder="Layout-Dateiname...">
+                    <button id="btn-save" class="primary">Auf Server speichern</button>
+                </div>
+            </fieldset>
+
+            <fieldset class="import-export box collapsible" data-collapsed="true">
+                <legend><h3>📤 Import / Export 📥</h3></legend>
+                <div class="form-group">
+                    <button id="btn-download" class="secondary">Aktuelles Layout herunterladen (.json)</button>
+                </div>
+                <hr>
+   
+                 <div class="form-group">
+                    <input type="file" id="file-upload" accept=".json" style="display: none;">
+                    <button id="btn-upload-trigger" class="secondary">Lokales Layout laden (.json)</button>
+                </div>
+            </fieldset>
+
+            <fieldset class="controls box collapsible" data-collapsed="true">
+                <legend><h3>📐 Layout-Steuerung</h3></legend>
+                
+                <div class="form-group">
+                    <label>Datenzeilen: <input type="number" id="rows" value="10" min="0"></label>
+                    <label>Spalten: <input type="number" id="cols" value="4" min="1"></label>
+                    <label>
+                        <input type="checkbox" id="header-rows-2">
+                       
+                     Zweite Header-Zeile
+                    </label>
+                </div>
+                <div class="form-group">
+                    <label>Header-Zeilenhöhe (mm): <input type="text" id="header-row-height" value="8mm"></label>
+                    <label>Daten-Zeilenhöhe (mm): <input type="text" id="row-height" value="10mm"></label>
+                   
+                 <button id="btn-calc-max-rows">Max. Datenzeilen berechnen</button>
+                </div>
+                <button id="btn-generate">Basis-Raster anwenden</button>
+                <div id="dynamic-controls"></div>
+            </fieldset>
+
+        
+
+            <fieldset class="box collapsible" data-collapsed="true">
+                <legend><h3>🎨 Branding, Logo & Design</h3></legend>
+  
+                <div class="form-group">
+                    <label>Logo (aus Ordner 'logos'):
+                        <select id="logo-select">
+                            <option value="">-- Kein Logo --</option>
+     
+                       </select>
+                    </label>
+                    <label>Logo-Höhe (mm/px): <input type="text" id="logo-height" value="20mm"></label>
+                    <label>Logo-Position:
+                
+                 <select id="logo-align">
+                            <option value="left">Links</option>
+                            <option value="center">Mitte</option>
+                            <option value="right">Rechts</option>
+    
+                         </select>
+                    </label>
+                </div>
+                <div id="logo-preview"></div>
+                
+                <hr> <div class="form-group">
+                    <label>Blatt-Hintergrund: <input type="color" id="bg-color-page" value="#FFFFFF"></label>
+                    <label>Header-Hintergrund: <input type="color" id="bg-color-header" value="#EEEEEE"></label>
+                    <label>Daten-Hintergrund: <input type="color" id="bg-color-data" value="#FFFFFF"></label>
+            
+                 </div>
+                <div class="form-group">
+                    <label>Rand-Dicke: <input type="text" id="border-width" value="1px"></label>
+                    <label>Rand-Farbe: <input type="color" id="border-color" value="#000000"></label>
+                </div>
+                <div class="form-group">
+                    <label>Header Schriftart: 
+ <input type="text" id="header-font-family" value="Arial"></label>
+                    <label>Header Schriftgröße: <input type="text" id="header-font-size" value="12pt"></label>
+                    <label>Header Schriftfarbe: <input type="color" id="header-font-color" value="#000000"></label>
+                </div>
+            </fieldset>
+            
+            <fieldset class="box collapsible" data-collapsed="true">
+                <legend><h3>📄 Druck-Einstellungen</h3></legend>
+                 <div class="form-group">
+                    <label>Format: 
+                        <select id="print-size">
+              
+                           <option value="A4" selected>A4</option>
+                            <option value="A5">A5</option>
+                            <option value="A3">A3</option>
+                        </select>
+  
+                   </label>
+                    <label>Ausrichtung: 
+                        <select id="print-orientation">
+                            <option value="portrait" selected>Hochformat</option>
+      
+                           <option value="landscape">Querformat</option>
+                        </select>
+                    </label>
+                </div>
+                <div 
+ class="form-group">
+                    <label>Rand Oben (mm): <input type="text" id="margin-top" value="15mm"></label>
+                    <label>Rand Unten (mm): <input type="text" id="margin-bottom" value="15mm"></label>
+                </div>
+                <div class="form-group">
+               
+                     <label>Rand Links (mm): <input type="text" id="margin-left" value="15mm"></label>
+                    <label>Rand Rechts (mm): <input type="text" id="margin-right" value="15mm"></label>
+                </div>
+            </fieldset>
+            </div> <div class="column-right">
+            <div class="preview-container box">
+                 <div class="preview-header">
+                    <h2>Vorschau (Druckansicht)</h2>
+            
+                     <button id="btn-print" class="primary">Drucken</button>
+                </div>
+                <div class="merge-controls">
+                    <p><b>Zellen verbinden:</b> 1. Zelle klicken, dann <b>SHIFT</b> + 2. Zelle klicken.</p>
+                    <button id="btn-merge-cells">Auswahl verbinden</button>
+                    <button id="btn-unmerge-cell">Auswahl-Verbindung aufheben</button>
+       
+                     <button id="btn-clear-merges" class="danger">Alle aufheben</button>
+                </div>
+                <div id="table-preview-wrapper">
+                    <div id="print-header-wrapper"></div>
+                    <div id="table-preview"></div>
+                </div>
+            </div>
+
+            
+
+        </div> </div> <script src="app.js"></script>
+</body>
+</html>
