@@ -361,3 +361,18 @@ fieldset.collapsible[data-collapsed="true"] > legend h3::before {
         color-adjust: exact !important;
     }
 }
+/* --- Border Controls Panel --- */
+#border-controls {
+    position: absolute;
+    z-index: 1000;
+    background: #fff;
+    border: 1px solid #999;
+    border-radius: 6px;
+    padding: 15px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+#top-table-preview td.selection-start,
+#bottom-table-preview td.selection-start {
+    background-color: #cce5ff !important;
+}

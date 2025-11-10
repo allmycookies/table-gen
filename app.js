@@ -38,6 +38,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const topTablePreview = document.getElementById('top-table-preview');
     const topTablePositionSelect = document.getElementById('top-table-position');
     const bottomTablePreview = document.getElementById('bottom-table-preview');
+    const topBgColorInput = document.getElementById('top-bg-color');
+    const topFontFamilyInput = document.getElementById('top-font-family');
+    const topFontSizeInput = document.getElementById('top-font-size');
+    const topFontColorInput = document.getElementById('top-font-color');
+    const borderControls = document.getElementById('border-controls');
+    const borderTopCheckbox = document.getElementById('border-top');
+    const borderRightCheckbox = document.getElementById('border-right');
+    const borderBottomCheckbox = document.getElementById('border-bottom');
+    const borderLeftCheckbox = document.getElementById('border-left');
     // (Design DOM-Elemente)
     const logoSelect = document.getElementById('logo-select');
     const logoHeightInput = document.getElementById('logo-height');
@@ -68,6 +77,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentConfig = {};
     let selectionStart = null;
     let selectionEnd = null;
+    let selectedTopTableCell = null;
     // --- Helper-Funktion für Live-Updates ---
     function updateConfigAndRender() {
         updateConfigFromDOM();
@@ -175,11 +185,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 cols: 3,
                 rowHeight: '8mm',
                 position: 'top',
-                cellData: [
-                    ['', '', ''],
-                    ['', '', ''],
-                    ['', '', '']
-                ]
+                bgColor: '#FFFFFF',
+                fontFamily: 'Arial',
+                fontSize: '12pt',
+                fontColor: '#000000',
+                cellData: [],
+                borders: {}
             }
         };
         applyConfig(defaultConfig);
@@ -195,16 +206,26 @@ document.addEventListener('DOMContentLoaded', () => {
         topColsInput.addEventListener('change', updateConfigAndRender);
         topRowHeightInput.addEventListener('change', updateConfigAndRender);
         topTablePositionSelect.addEventListener('change', updateConfigAndRender);
+        topBgColorInput.addEventListener('input', updateConfigAndRender);
+        topFontFamilyInput.addEventListener('change', updateConfigAndRender);
+        topFontSizeInput.addEventListener('change', updateConfigAndRender);
+        topFontColorInput.addEventListener('input', updateConfigAndRender);
         topTablePreview.addEventListener('input', (e) => {
             if (e.target.tagName === 'TEXTAREA') {
-                updateConfigAndRender();
+                updateConfigFromDOM();
             }
         });
         bottomTablePreview.addEventListener('input', (e) => {
             if (e.target.tagName === 'TEXTAREA') {
-                updateConfigAndRender();
+                updateConfigFromDOM();
             }
         });
+        topTablePreview.addEventListener('click', handleTopTableCellClick);
+        bottomTablePreview.addEventListener('click', handleTopTableCellClick);
+        borderTopCheckbox.addEventListener('change', updateBorders);
+        borderRightCheckbox.addEventListener('change', updateBorders);
+        borderBottomCheckbox.addEventListener('change', updateBorders);
+        borderLeftCheckbox.addEventListener('change', updateBorders);
     }
 
     // --- Logo-Funktionen ---
@@ -334,12 +355,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 cols: parseInt(topColsInput.value, 10),
                 rowHeight: topRowHeightInput.value,
                 position: topTablePositionSelect.value,
-                cellData: getTopTableCellData()
+                bgColor: topBgColorInput.value,
+                fontFamily: topFontFamilyInput.value,
+                fontSize: topFontSizeInput.value,
+                fontColor: topFontColorInput.value,
+                cellData: getTopTableCellData(),
+                borders: currentConfig.topTable.borders || {}
             }
         };
     }
 
     function getTopTableCellData() {
+        if (!currentConfig.topTable || !currentConfig.topTable.enabled) return [];
         const rows = parseInt(topRowsInput.value, 10);
         const cols = parseInt(topColsInput.value, 10);
         const cellData = [];
@@ -394,6 +421,10 @@ document.addEventListener('DOMContentLoaded', () => {
             topColsInput.value = config.topTable.cols;
             topRowHeightInput.value = config.topTable.rowHeight;
             topTablePositionSelect.value = config.topTable.position || 'top';
+            topBgColorInput.value = config.topTable.bgColor || '#FFFFFF';
+            topFontFamilyInput.value = config.topTable.fontFamily || 'Arial';
+            topFontSizeInput.value = config.topTable.fontSize || '12pt';
+            topFontColorInput.value = config.topTable.fontColor || '#000000';
         }
         topTableControls.style.display = topTableEnableCheckbox.checked ? 'block' : 'none';
 
@@ -503,18 +534,19 @@ document.addEventListener('DOMContentLoaded', () => {
             cols,
             rowHeight,
             cellData,
-            position
+            position,
+            bgColor,
+            fontFamily,
+            fontSize,
+            fontColor,
+            borders
         } = currentConfig.topTable;
         const {
             borderWidth,
-            borderColor,
-            bgColorData,
-            headerFontFamily,
-            headerFontSize,
-            headerFontColor
+            borderColor
         } = currentConfig;
 
-        let tableHTML = `<table style="border-collapse: collapse; table-layout: fixed; width: 100%; border: ${borderWidth} solid ${borderColor};">`;
+        let tableHTML = `<table style="border-collapse: collapse; table-layout: fixed; width: 100%;">`;
         tableHTML += '<colgroup>';
         for (let i = 0; i < cols; i++) {
             tableHTML += `<col style="width: ${100 / cols}%;">`;
@@ -525,32 +557,36 @@ document.addEventListener('DOMContentLoaded', () => {
         for (let r = 0; r < rows; r++) {
             tableHTML += `<tr style="height: ${rowHeight};">`;
             for (let c = 0; c < cols; c++) {
-                const cellValue = cellData[r] && cellData[r][c] ? cellData[r][c] : '';
+                const cellValue = cellData && cellData[r] && cellData[r][c] ? cellData[r][c] : '';
+                const cellId = `${r}-${c}`;
+                const cellBorders = borders && borders[cellId] ? borders[cellId] : { top: true, right: true, bottom: true, left: true };
+
                 let cellStyle = `
-                    border: ${borderWidth} solid ${borderColor};
-                    background-color: ${bgColorData};
-                    font-family: ${headerFontFamily};
-                    font-size: ${headerFontSize};
-                    color: ${headerFontColor};
+                    background-color: ${bgColor};
+                    font-family: ${fontFamily};
+                    font-size: ${fontSize};
+                    color: ${fontColor};
                     padding: 2mm 3mm;
+                    border-top: ${cellBorders.top ? `${borderWidth} solid ${borderColor}` : 'none'};
+                    border-right: ${cellBorders.right ? `${borderWidth} solid ${borderColor}` : 'none'};
+                    border-bottom: ${cellBorders.bottom ? `${borderWidth} solid ${borderColor}` : 'none'};
+                    border-left: ${cellBorders.left ? `${borderWidth} solid ${borderColor}` : 'none'};
                 `;
-                tableHTML += `<td style="${cellStyle}" data-row="${r}" data-col="${c}"><textarea data-row="${r}" data-col="${c}" style="width: 100%; height: 100%; border: none; resize: none;">${cellValue}</textarea></td>`;
+                tableHTML += `<td style="${cellStyle}" data-row="${r}" data-col="${c}"><textarea data-row="${r}" data-col="${c}" style="width: 100%; height: 100%; border: none; resize: none; background-color: transparent; font-family: inherit; font-size: inherit; color: inherit;">${cellValue}</textarea></td>`;
             }
             tableHTML += '</tr>';
         }
         tableHTML += '</tbody></table>';
 
-        if (position === 'top') {
-            topTablePreview.innerHTML = tableHTML;
-            bottomTablePreview.innerHTML = '';
-            topTablePreview.style.marginBottom = '5mm';
-            bottomTablePreview.style.marginTop = '0';
-        } else {
-            bottomTablePreview.innerHTML = tableHTML;
-            topTablePreview.innerHTML = '';
-            bottomTablePreview.style.marginTop = '5mm';
-            topTablePreview.style.marginBottom = '0';
-        }
+        const targetPreview = position === 'top' ? topTablePreview : bottomTablePreview;
+        const otherPreview = position === 'top' ? bottomTablePreview : topTablePreview;
+
+        targetPreview.innerHTML = tableHTML;
+        otherPreview.innerHTML = '';
+        targetPreview.style.margin = position === 'top' ? '0 0 5mm 0' : '5mm 0 0 0';
+        otherPreview.style.margin = '0';
+
+        updateTopTableCellSelectionVisuals();
     }
 
     function renderTable() {
@@ -652,6 +688,11 @@ document.addEventListener('DOMContentLoaded', () => {
         if (e.shiftKey) { selectionEnd = selection; }
         else { selectionStart = selection;
             selectionEnd = null; }
+
+        // Hide top table border controls if main table is clicked
+        borderControls.style.display = 'none';
+        selectedTopTableCell = null;
+        updateTopTableCellSelectionVisuals(); // Clear selection visuals from top table
         updateSelectionVisuals();
     }
     function updateSelectionVisuals() {
@@ -708,6 +749,81 @@ document.addEventListener('DOMContentLoaded', () => {
             selectionEnd = null;
             renderTable();
         }
+    }
+
+    function handleTopTableCellClick(e) {
+        const cell = e.target.closest('td');
+        if (!cell) {
+            // If click is outside a cell, hide controls and clear selection
+            borderControls.style.display = 'none';
+            selectedTopTableCell = null;
+            updateTopTableCellSelectionVisuals();
+            return;
+        }
+        e.stopPropagation(); // Prevent main table handler from firing
+
+        selectedTopTableCell = {
+            row: parseInt(cell.dataset.row, 10),
+            col: parseInt(cell.dataset.col, 10)
+        };
+
+        // Clear main table selection
+        selectionStart = null;
+        selectionEnd = null;
+        updateSelectionVisuals();
+
+        updateTopTableCellSelectionVisuals();
+        showBorderControls(cell);
+    }
+
+    function updateTopTableCellSelectionVisuals() {
+        const allCells = document.querySelectorAll('#top-table-preview td, #bottom-table-preview td');
+        allCells.forEach(c => c.classList.remove('selection-start'));
+
+        if (selectedTopTableCell) {
+            const { row, col } = selectedTopTableCell;
+            const container = currentConfig.topTable.position === 'top' ? topTablePreview : bottomTablePreview;
+            const selectedCell = container.querySelector(`td[data-row="${row}"][data-col="${col}"]`);
+            if (selectedCell) {
+                selectedCell.classList.add('selection-start');
+            }
+        }
+    }
+
+    function showBorderControls(cell) {
+        const rect = cell.getBoundingClientRect();
+        borderControls.style.display = 'block';
+        borderControls.dataset.collapsed = 'false';
+        borderControls.style.top = `${window.scrollY + rect.bottom + 5}px`;
+        borderControls.style.left = `${window.scrollX + rect.left}px`;
+
+        const cellId = `${selectedTopTableCell.row}-${selectedTopTableCell.col}`;
+        const borders = currentConfig.topTable.borders[cellId] || { top: true, right: true, bottom: true, left: true };
+
+        borderTopCheckbox.checked = borders.top;
+        borderRightCheckbox.checked = borders.right;
+        borderBottomCheckbox.checked = borders.bottom;
+        borderLeftCheckbox.checked = borders.left;
+    }
+
+    function updateBorders() {
+        if (!selectedTopTableCell) return;
+
+        const cellId = `${selectedTopTableCell.row}-${selectedTopTableCell.col}`;
+
+        // Initialize border object for the cell if it doesn't exist
+        if (!currentConfig.topTable.borders[cellId]) {
+            currentConfig.topTable.borders[cellId] = { top: true, right: true, bottom: true, left: true };
+        }
+
+        currentConfig.topTable.borders[cellId] = {
+            top: borderTopCheckbox.checked,
+            right: borderRightCheckbox.checked,
+            bottom: borderBottomCheckbox.checked,
+            left: borderLeftCheckbox.checked
+        };
+
+        renderTopTable(); // Re-render to show border changes
     }
 
     // --- Druck- & Berechnungs-Logik ---
