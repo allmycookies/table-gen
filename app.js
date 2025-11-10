@@ -576,19 +576,24 @@ document.addEventListener('DOMContentLoaded', () => {
                     font-family: ${fontFamily};
                     font-size: ${fontSize};
                     color: ${fontColor};
-                    padding: 0 3mm;
+                    padding: 0;
                     border-top: ${cellBorders.top ? `${borderWidth} solid ${borderColor}` : 'none'};
                     border-right: ${cellBorders.right ? `${borderWidth} solid ${borderColor}` : 'none'};
                     border-bottom: ${cellBorders.bottom ? `${borderWidth} solid ${borderColor}` : 'none'};
                     border-left: ${cellBorders.left ? `${borderWidth} solid ${borderColor}` : 'none'};
-                    text-align: ${cellAlign};
-                    vertical-align: middle;
                     overflow: hidden;
-                    white-space: nowrap;
+                `;
+                let divStyle = `
+                    height: 100%;
+                    width: 100%;
+                    display: flex;
+                    align-items: center;
+                    justify-content: ${cellAlign};
+                    overflow: hidden;
+                    padding: 0 3mm;
                 `;
                 let textareaStyle = `
                     width: 100%;
-                    height: 100%;
                     border: none;
                     resize: none;
                     background-color: transparent;
@@ -596,11 +601,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     font-size: inherit;
                     color: inherit;
                     text-align: ${cellAlign};
-                    vertical-align: middle;
                     padding: 0;
                     margin: 0;
+                    line-height: 1.2;
                 `;
-                tableHTML += `<td style="${cellStyle}" data-row="${r}" data-col="${c}"><textarea data-row="${r}" data-col="${c}" style="${textareaStyle}">${cellValue}</textarea></td>`;
+                tableHTML += `<td style="${cellStyle}" data-row="${r}" data-col="${c}"><div style="${divStyle}"><textarea data-row="${r}" data-col="${c}" style="${textareaStyle}">${cellValue}</textarea></div></td>`;
             }
             tableHTML += '</tr>';
         }
