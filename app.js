@@ -214,16 +214,13 @@ document.addEventListener('DOMContentLoaded', () => {
         topFontFamilyInput.addEventListener('change', updateConfigAndRender);
         topFontSizeInput.addEventListener('change', updateConfigAndRender);
         topFontColorInput.addEventListener('input', updateConfigAndRender);
-        topTablePreview.addEventListener('input', (e) => {
-            if (e.target.tagName === 'TEXTAREA') {
+        const handleTopTableInput = (e) => {
+            if (e.target.isContentEditable) {
                 updateConfigFromDOM();
             }
-        });
-        bottomTablePreview.addEventListener('input', (e) => {
-            if (e.target.tagName === 'TEXTAREA') {
-                updateConfigFromDOM();
-            }
-        });
+        };
+        topTablePreview.addEventListener('input', handleTopTableInput);
+        bottomTablePreview.addEventListener('input', handleTopTableInput);
         topTablePreview.addEventListener('click', handleTopTableCellClick);
         bottomTablePreview.addEventListener('click', handleTopTableCellClick);
         borderTopCheckbox.addEventListener('change', updateBorders);
@@ -382,8 +379,8 @@ document.addEventListener('DOMContentLoaded', () => {
         for (let r = 0; r < rows; r++) {
             const rowData = [];
             for (let c = 0; c < cols; c++) {
-                const textarea = container.querySelector(`textarea[data-row="${r}"][data-col="${c}"]`);
-                rowData.push(textarea ? textarea.value : '');
+                const div = container.querySelector(`div[contenteditable="true"][data-row="${r}"][data-col="${c}"]`);
+                rowData.push(div ? div.innerText : '');
             }
             cellData.push(rowData);
         }
@@ -564,6 +561,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         tableHTML += '<tbody>';
         for (let r = 0; r < rows; r++) {
+            // Die Höhe wird auf die TR gesetzt, damit table-layout:fixed sie erzwingen kann.
             tableHTML += `<tr style="height: ${rowHeight};">`;
             for (let c = 0; c < cols; c++) {
                 const cellId = `${r}-${c}`;
@@ -571,6 +569,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const cellBorders = borders && borders[cellId] ? borders[cellId] : { top: true, right: true, bottom: true, left: true };
                 const cellAlign = aligns && aligns[cellId] ? aligns[cellId] : 'left';
 
+                // TD hat keine Höhe mehr, nur noch padding: 0.
                 let cellStyle = `
                     background-color: ${bgColor};
                     font-family: ${fontFamily};
@@ -581,21 +580,21 @@ document.addEventListener('DOMContentLoaded', () => {
                     border-right: ${cellBorders.right ? `${borderWidth} solid ${borderColor}` : 'none'};
                     border-bottom: ${cellBorders.bottom ? `${borderWidth} solid ${borderColor}` : 'none'};
                     border-left: ${cellBorders.left ? `${borderWidth} solid ${borderColor}` : 'none'};
-                    overflow: hidden;
                 `;
+                 // Der DIV wird zum Clipping-Container.
                 let divStyle = `
                     height: 100%;
                     width: 100%;
                     display: flex;
                     align-items: center;
                     justify-content: ${cellAlign};
-                    overflow: hidden;
+                    overflow: hidden; /* Wichtig: Dieser DIV schneidet den Inhalt ab. */
                     padding: 0 3mm;
                 `;
-                let textareaStyle = `
+                // Der contenteditable DIV füllt den äußeren DIV.
+                let editableDivStyle = `
                     width: 100%;
                     border: none;
-                    resize: none;
                     background-color: transparent;
                     font-family: inherit;
                     font-size: inherit;
@@ -604,8 +603,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     padding: 0;
                     margin: 0;
                     line-height: 1.2;
+                    overflow: hidden;
+                    white-space: nowrap; /* Verhindert Zeilenumbrüche, die die Höhe beeinflussen könnten */
                 `;
-                tableHTML += `<td style="${cellStyle}" data-row="${r}" data-col="${c}"><div style="${divStyle}"><textarea data-row="${r}" data-col="${c}" style="${textareaStyle}">${cellValue}</textarea></div></td>`;
+                tableHTML += `<td style="${cellStyle}" data-row="${r}" data-col="${c}"><div style="${divStyle}"><div contenteditable="true" data-row="${r}" data-col="${c}" style="${editableDivStyle}">${cellValue}</div></div></td>`;
             }
             tableHTML += '</tr>';
         }
