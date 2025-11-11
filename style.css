@@ -209,6 +209,23 @@ button.secondary:hover {
     table-layout: fixed;
     background: white; /* Wird von JS überschrieben */
 }
+#top-table-preview {
+    margin-bottom: 5mm;
+}
+
+#top-table-preview textarea {
+    width: 100%;
+    height: 100%;
+    border: none;
+    resize: none;
+    padding: 0;
+    margin: 0;
+    font-family: inherit;
+    font-size: inherit;
+    color: inherit;
+    background-color: transparent;
+}
+
 #table-preview th, #table-preview td {
     /* Ränder werden von JS inline gesetzt */
     padding: 8px;
@@ -343,4 +360,19 @@ fieldset.collapsible[data-collapsed="true"] > legend h3::before {
         -webkit-print-color-adjust: exact !important;
         color-adjust: exact !important;
     }
+}
+/* --- Border Controls Panel --- */
+#border-controls {
+    position: absolute;
+    z-index: 1000;
+    background: #fff;
+    border: 1px solid #999;
+    border-radius: 6px;
+    padding: 15px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+#top-table-preview td.selection-start,
+#bottom-table-preview td.selection-start {
+    background-color: #cce5ff !important;
 }

@@ -44,6 +44,52 @@
             </fieldset>
 
             <fieldset class="controls box collapsible" data-collapsed="true">
+                <legend><h3>📝 Eigene Text-Tabelle (oben)</h3></legend>
+                <div class="form-group">
+                    <label><input type="checkbox" id="top-table-enable"> Tabelle oben anzeigen</label>
+                </div>
+                <div id="top-table-controls" style="display: none;">
+                    <div class="form-group">
+                        <label>Zeilen: <input type="number" id="top-rows" value="3" min="1"></label>
+                        <label>Spalten: <input type="number" id="top-cols" value="3" min="1"></label>
+                    </div>
+                     <div class="form-group">
+                        <label>Zeilenhöhe (mm): <input type="text" id="top-row-height" value="8mm"></label>
+                        <label>Position:
+                            <select id="top-table-position">
+                                <option value="top">Oben</option>
+                                <option value="bottom">Unten</option>
+                            </select>
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <label>Hintergrund: <input type="color" id="top-bg-color" value="#FFFFFF"></label>
+                        <label>Schriftart: <input type="text" id="top-font-family" value="Arial"></label>
+                        <label>Schriftgröße: <input type="text" id="top-font-size" value="12pt"></label>
+                        <label>Schriftfarbe: <input type="color" id="top-font-color" value="#000000"></label>
+                    </div>
+                </div>
+            </fieldset>
+
+            <fieldset id="border-controls" class="box collapsible" data-collapsed="true" style="display: none;">
+                <legend><h3>Zell-Steuerung</h3></legend>
+                <div class="form-group">
+                    <b>Rahmen:</b>
+                    <label><input type="checkbox" id="border-top"> Oben</label>
+                    <label><input type="checkbox" id="border-right"> Rechts</label>
+                    <label><input type="checkbox" id="border-bottom"> Unten</label>
+                    <label><input type="checkbox" id="border-left"> Links</label>
+                </div>
+                <hr>
+                <div class="form-group">
+                    <b>Ausrichtung:</b>
+                    <button id="align-left">Links</button>
+                    <button id="align-center">Mitte</button>
+                    <button id="align-right">Rechts</button>
+                </div>
+            </fieldset>
+
+            <fieldset class="controls box collapsible" data-collapsed="true">
                 <legend><h3>📐 Layout-Steuerung</h3></legend>
                 
                 <div class="form-group">
@@ -154,8 +200,10 @@
                      <button id="btn-clear-merges" class="danger">Alle aufheben</button>
                 </div>
                 <div id="table-preview-wrapper">
+                    <div id="top-table-preview"></div>
                     <div id="print-header-wrapper"></div>
                     <div id="table-preview"></div>
+                    <div id="bottom-table-preview"></div>
                 </div>
             </div>
 

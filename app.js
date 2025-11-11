@@ -1,19 +1,19 @@
 document.addEventListener('DOMContentLoaded', () => {
 
     // --- DOM-Elemente ---
-    const rowsInput = document.getElementById('rows'); 
+    const rowsInput = document.getElementById('rows');
     const colsInput = document.getElementById('cols');
     const headerRows2Checkbox = document.getElementById('header-rows-2');
-    const headerRowHeightInput = document.getElementById('header-row-height'); 
-    const rowHeightInput = document.getElementById('row-height'); 
+    const headerRowHeightInput = document.getElementById('header-row-height');
+    const rowHeightInput = document.getElementById('row-height');
     const marginTopInput = document.getElementById('margin-top');
     const marginBottomInput = document.getElementById('margin-bottom');
     const marginLeftInput = document.getElementById('margin-left');
     const marginRightInput = document.getElementById('margin-right');
     const btnGenerate = document.getElementById('btn-generate');
     const dynamicControls = document.getElementById('dynamic-controls');
-    
-    
+
+
     const tablePreview = document.getElementById('table-preview');
     const tablePreviewWrapper = document.getElementById('table-preview-wrapper');
     // <-- HINZUFÜGEN
@@ -27,9 +27,29 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnCalcMaxRows = document.getElementById('btn-calc-max-rows');
     const btnPrint = document.getElementById('btn-print');
     const btnMergeCells = document.getElementById('btn-merge-cells');
-    const btnUnmergeCell = document.getElementById('btn-unmerge-cell'); 
+    const btnUnmergeCell = document.getElementById('btn-unmerge-cell');
     const btnClearMerges = document.getElementById('btn-clear-merges');
     const printStyleSheet = document.getElementById('print-style-sheet');
+    const topTableEnableCheckbox = document.getElementById('top-table-enable');
+    const topTableControls = document.getElementById('top-table-controls');
+    const topRowsInput = document.getElementById('top-rows');
+    const topColsInput = document.getElementById('top-cols');
+    const topRowHeightInput = document.getElementById('top-row-height');
+    const topTablePreview = document.getElementById('top-table-preview');
+    const topTablePositionSelect = document.getElementById('top-table-position');
+    const bottomTablePreview = document.getElementById('bottom-table-preview');
+    const topBgColorInput = document.getElementById('top-bg-color');
+    const topFontFamilyInput = document.getElementById('top-font-family');
+    const topFontSizeInput = document.getElementById('top-font-size');
+    const topFontColorInput = document.getElementById('top-font-color');
+    const borderControls = document.getElementById('border-controls');
+    const borderTopCheckbox = document.getElementById('border-top');
+    const borderRightCheckbox = document.getElementById('border-right');
+    const borderBottomCheckbox = document.getElementById('border-bottom');
+    const borderLeftCheckbox = document.getElementById('border-left');
+    const alignLeftButton = document.getElementById('align-left');
+    const alignCenterButton = document.getElementById('align-center');
+    const alignRightButton = document.getElementById('align-right');
     // (Design DOM-Elemente)
     const logoSelect = document.getElementById('logo-select');
     const logoHeightInput = document.getElementById('logo-height');
@@ -58,14 +78,15 @@ document.addEventListener('DOMContentLoaded', () => {
     };
     // --- Globaler State ---
     let currentConfig = {};
-    let selectionStart = null; 
+    let selectionStart = null;
     let selectionEnd = null;
+    let selectedTopTableCell = null;
     // --- Helper-Funktion für Live-Updates ---
     function updateConfigAndRender() {
         updateConfigFromDOM();
         renderTable();
     }
-    
+
     // --- Event Listener ---
     rowsInput.addEventListener('change', updateConfigAndRender);
     colsInput.addEventListener('change', () => {
@@ -73,17 +94,17 @@ document.addEventListener('DOMContentLoaded', () => {
         generateDynamicControls(false); // false = Werte beibehalten
         renderTable();
     });
-    headerRowHeightInput.addEventListener('change', updateConfigAndRender); 
+    headerRowHeightInput.addEventListener('change', updateConfigAndRender);
     rowHeightInput.addEventListener('change', updateConfigAndRender);
-    
+
     headerRows2Checkbox.addEventListener('change', () => {
         updateConfigFromDOM();
-        generateDynamicControls(false); 
+        generateDynamicControls(false);
         renderTable();
     });
     printSizeSelect.addEventListener('change', updateConfigAndRender);
     printOrientationSelect.addEventListener('change', updateConfigAndRender);
-    
+
     marginTopInput.addEventListener('change', updateConfigAndRender);
     marginBottomInput.addEventListener('change', updateConfigAndRender);
     marginLeftInput.addEventListener('change', updateConfigAndRender);
@@ -91,14 +112,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     dynamicControls.addEventListener('input', updateConfigAndRender);
     btnGenerate.addEventListener('click', () => {
-        updateConfigFromDOM(); 
+        updateConfigFromDOM();
         generateDynamicControls(true); // true = Werte löschen
         renderTable();
     });
     btnCalcMaxRows.addEventListener('click', calculateMaxRows);
     tablePreview.addEventListener('click', handleCellClick);
     btnMergeCells.addEventListener('click', mergeCells);
-    btnUnmergeCell.addEventListener('click', unmergeCell); 
+    btnUnmergeCell.addEventListener('click', unmergeCell);
     btnClearMerges.addEventListener('click', clearMerges);
     btnSave.addEventListener('click', saveLayout);
     btnLoad.addEventListener('click', loadLayout);
@@ -144,28 +165,71 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Initialisierung ---
     function initialize() {
         const defaultConfig = {
-            rows: 10, cols: 4, headerRows: 1, headerRowHeight: '8mm', rowHeight: '10mm',      
+            rows: 10, cols: 4, headerRows: 1, headerRowHeight: '8mm', rowHeight: '10mm',
             headers: ['Überschrift 1', 'Überschrift 2', 'Überschrift 3', 'Überschrift 4'],
             headers2: [], colWidths: ['50mm', '50mm', '50mm', '25mm'], merges: [],
-    
-    
-            
+
+
+
             printSize: 'A4', printOrientation: 'portrait',
             marginTop: '15mm', marginBottom: '15mm', marginLeft: '15mm', marginRight: '15mm',
             // --- NEU: Design Defaults ---
             logoFile: '', logoHeight: '20mm', logoAlign: 'left',
             bgColorPage: '#FFFFFF', bgColorHeader: '#EEEEEE', bgColorData: '#FFFFFF',
-   
-            borderWidth: '1px', borderColor: 
+
+            borderWidth: '1px', borderColor:
             '#000000',
-    
+
             headerFontFamily: 'Arial', headerFontSize: '12pt', headerFontColor: '#000000',
-            headerAligns: ['left', 'left', 'left', 'left']
+            headerAligns: ['left', 'left', 'left', 'left'],
+            topTable: {
+                enabled: false,
+                rows: 3,
+                cols: 3,
+                rowHeight: '8mm',
+                position: 'top',
+                bgColor: '#FFFFFF',
+                fontFamily: 'Arial',
+                fontSize: '12pt',
+                fontColor: '#000000',
+                cellData: [],
+                borders: {},
+                aligns: {}
+            }
         };
-        applyConfig(defaultConfig); 
+        applyConfig(defaultConfig);
         loadLayoutList(); // Layouts aus DB laden
         loadLogoList(); // Logos aus Ordner laden
         initializeCollapsibleFieldsets(); // NEU: Klapp-Funktion aktivieren
+
+        topTableEnableCheckbox.addEventListener('change', () => {
+            topTableControls.style.display = topTableEnableCheckbox.checked ? 'block' : 'none';
+            updateConfigAndRender();
+        });
+        topRowsInput.addEventListener('change', updateConfigAndRender);
+        topColsInput.addEventListener('change', updateConfigAndRender);
+        topRowHeightInput.addEventListener('change', updateConfigAndRender);
+        topTablePositionSelect.addEventListener('change', updateConfigAndRender);
+        topBgColorInput.addEventListener('input', updateConfigAndRender);
+        topFontFamilyInput.addEventListener('change', updateConfigAndRender);
+        topFontSizeInput.addEventListener('change', updateConfigAndRender);
+        topFontColorInput.addEventListener('input', updateConfigAndRender);
+        const handleTopTableInput = (e) => {
+            if (e.target.isContentEditable) {
+                updateConfigFromDOM();
+            }
+        };
+        topTablePreview.addEventListener('input', handleTopTableInput);
+        bottomTablePreview.addEventListener('input', handleTopTableInput);
+        topTablePreview.addEventListener('click', handleTopTableCellClick);
+        bottomTablePreview.addEventListener('click', handleTopTableCellClick);
+        borderTopCheckbox.addEventListener('change', updateBorders);
+        borderRightCheckbox.addEventListener('change', updateBorders);
+        borderBottomCheckbox.addEventListener('change', updateBorders);
+        borderLeftCheckbox.addEventListener('change', updateBorders);
+        alignLeftButton.addEventListener('click', () => updateAlignment('left'));
+        alignCenterButton.addEventListener('click', () => updateAlignment('center'));
+        alignRightButton.addEventListener('click', () => updateAlignment('right'));
     }
 
     // --- Logo-Funktionen ---
@@ -197,13 +261,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
         printHeaderWrapper.innerHTML = '';
         // Vorhandenes Logo leeren
-        
+
         if (logoFile) {
             const img = document.createElement('img');
             img.src = `logos/${logoFile}`; // Annahme: Logos liegen im 'logos'-Ordner
             img.alt = 'Logo Preview';
             // --- STYLING KORRIGIERT & VEREINHEITLICHT ---
-            
+
             // 1. Stile auf das Bild selbst anwenden
             img.style.height = logoHeight;
             img.style.maxWidth = '100%'; // Vermeide Überlauf
@@ -215,7 +279,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (logoAlign === 'center') {
                 img.style.marginLeft = 'auto';
                 img.style.marginRight = 'auto';
-                img.style.display = 'block'; 
+                img.style.display = 'block';
             } else if (logoAlign === 'right') {
                 img.style.marginLeft = 'auto';
                 img.style.marginRight = '0';
@@ -230,7 +294,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             printHeaderWrapper.appendChild(img);
         }
-        
+
         // 3. Wende 'text-align' auf den Wrapper an.
         //    Dies funktioniert jetzt, da das Bild 'inline-block' ist.
         printHeaderWrapper.style.textAlign = logoAlign;
@@ -240,31 +304,31 @@ document.addEventListener('DOMContentLoaded', () => {
     function updateConfigFromDOM() {
         const numCols = parseInt(colsInput.value, 10);
         const headers = [];
-        const headers2 = []; 
+        const headers2 = [];
         const colWidths = [];
         const headerAligns = [];
         for (let i = 0; i < numCols; i++) {
             headers.push(document.getElementById(`header-${i}`)?.value || '');
             colWidths.push(document.getElementById(`width-${i}`)?.value || 'auto');
             headerAligns.push(document.getElementById(`align-${i}`)?.value || 'left');
-            
+
             if (headerRows2Checkbox.checked) {
                 headers2.push(document.getElementById(`header2-${i}`)?.value || '');
             }
         }
 
         currentConfig = {
-            rows: parseInt(rowsInput.value, 10), 
+            rows: parseInt(rowsInput.value, 10),
             cols: numCols,
             headerRows: headerRows2Checkbox.checked ?
-            2 : 1, 
-            headerRowHeight: headerRowHeightInput.value, 
+            2 : 1,
+            headerRowHeight: headerRowHeightInput.value,
             rowHeight: rowHeightInput.value,
             headers: headers,
-            headers2: headers2, 
+            headers2: headers2,
             colWidths: colWidths,
             merges: currentConfig.merges ||
-            [], 
+            [],
             printSize: printSizeSelect.value,
             printOrientation: printOrientationSelect.value,
             marginTop: marginTopInput.value,
@@ -272,37 +336,68 @@ document.addEventListener('DOMContentLoaded', () => {
             marginLeft: marginLeftInput.value,
             marginRight: marginRightInput.value,
             // --- NEU: Design Werte ---
-    
-            
+
+
             logoFile: logoSelect.value,
             logoHeight: logoHeightInput.value,
             logoAlign: logoAlignSelect.value,
             bgColorPage: bgColorPageInput.value,
             bgColorHeader: bgColorHeaderInput.value,
             bgColorData: bgColorDataInput.value,
-          
+
             borderWidth: borderWidthInput.value,
-         
-           borderColor: 
+
+           borderColor:
             borderColorInput.value,
             headerFontFamily: headerFontFamilyInput.value,
             headerFontSize: headerFontSizeInput.value,
             headerFontColor: headerFontColorInput.value,
-            headerAligns: headerAligns
+            headerAligns: headerAligns,
+            topTable: {
+                enabled: topTableEnableCheckbox.checked,
+                rows: parseInt(topRowsInput.value, 10),
+                cols: parseInt(topColsInput.value, 10),
+                rowHeight: topRowHeightInput.value,
+                position: topTablePositionSelect.value,
+                bgColor: topBgColorInput.value,
+                fontFamily: topFontFamilyInput.value,
+                fontSize: topFontSizeInput.value,
+                fontColor: topFontColorInput.value,
+                cellData: getTopTableCellData(),
+                borders: currentConfig.topTable.borders || {},
+                aligns: currentConfig.topTable.aligns || {}
+            }
         };
+    }
+
+    function getTopTableCellData() {
+        if (!currentConfig.topTable || !currentConfig.topTable.enabled) return [];
+        const rows = parseInt(topRowsInput.value, 10);
+        const cols = parseInt(topColsInput.value, 10);
+        const cellData = [];
+        const container = currentConfig.topTable.position === 'top' ? topTablePreview : bottomTablePreview;
+        for (let r = 0; r < rows; r++) {
+            const rowData = [];
+            for (let c = 0; c < cols; c++) {
+                const div = container.querySelector(`div[contenteditable="true"][data-row="${r}"][data-col="${c}"]`);
+                rowData.push(div ? div.innerText : '');
+            }
+            cellData.push(rowData);
+        }
+        return cellData;
     }
 
     function applyConfig(config) {
         currentConfig = config;
-        
+
         rowsInput.value = config.rows;
-        colsInput.value = config.cols; 
-        headerRows2Checkbox.checked = (config.headerRows === 2); 
-        headerRowHeightInput.value = config.headerRowHeight || '8mm'; 
+        colsInput.value = config.cols;
+        headerRows2Checkbox.checked = (config.headerRows === 2);
+        headerRowHeightInput.value = config.headerRowHeight || '8mm';
         rowHeightInput.value = config.rowHeight;
         printSizeSelect.value = config.printSize;
         printOrientationSelect.value = config.printOrientation;
-        
+
         marginTopInput.value = config.marginTop || '15mm';
         marginBottomInput.value = config.marginBottom || '15mm';
         marginLeftInput.value = config.marginLeft || '15mm';
@@ -325,7 +420,20 @@ document.addEventListener('DOMContentLoaded', () => {
         headerFontColorInput.value = config.headerFontColor || '#000000';
         // headerAligns werden über generateDynamicControls gesetzt
 
-        generateDynamicControls(false); 
+        if (config.topTable) {
+            topTableEnableCheckbox.checked = config.topTable.enabled;
+            topRowsInput.value = config.topTable.rows;
+            topColsInput.value = config.topTable.cols;
+            topRowHeightInput.value = config.topTable.rowHeight;
+            topTablePositionSelect.value = config.topTable.position || 'top';
+            topBgColorInput.value = config.topTable.bgColor || '#FFFFFF';
+            topFontFamilyInput.value = config.topTable.fontFamily || 'Arial';
+            topFontSizeInput.value = config.topTable.fontSize || '12pt';
+            topFontColorInput.value = config.topTable.fontColor || '#000000';
+        }
+        topTableControls.style.display = topTableEnableCheckbox.checked ? 'block' : 'none';
+
+        generateDynamicControls(false);
         updateLogoPreview();
         // Logo-Vorschau aktualisieren, wenn Konfiguration angewendet wird
         renderTable();
@@ -334,9 +442,9 @@ document.addEventListener('DOMContentLoaded', () => {
     function generateDynamicControls(resetValues) {
         const numCols = parseInt(colsInput.value, 10);
         const numHeaderRows = headerRows2Checkbox.checked ? 2 : 1;
-        
-        dynamicControls.innerHTML = ''; 
-        
+
+        dynamicControls.innerHTML = '';
+
         const group1 = document.createElement('div');
         group1.innerHTML = '<h4>1. Header-Zeile (Überschriften, Breiten & Ausrichtung):</h4>';
         for (let i = 0; i < numCols; i++) {
@@ -349,9 +457,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     <label>#${i + 1}</label>
                     <input type="text" id="header-${i}" placeholder="Überschrift ${i + 1}" value="${header}">
                     <input type="text" id="width-${i}" placeholder="Breite (z.B. 50mm)" value="${width}">
-      
- 
-                    
+
+
+
                     <select id="align-${i}">
                         <option value="left" ${align === 'left' ?
                         'selected' : ''}>Links</option>
@@ -376,9 +484,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     <label>#${i + 1}</label>
                     <input type="text" id="header2-${i}" placeholder="Beschriftung ${i + 1}" value="${header2}">
                     <span style="font-size: 9px;">(Breite & Ausrichtung von oben)</span>
-   
- 
-                
+
+
+
                  </div>`;
             }
             dynamicControls.appendChild(group2);
@@ -396,31 +504,130 @@ document.addEventListener('DOMContentLoaded', () => {
         const matrix = Array(totalRows).fill(null).map(() => Array(cols).fill(null));
         merges.forEach(merge => {
             const { row, col, rowspan, colspan } = merge;
-            if (row >= totalRows || col >= cols) return; 
+            if (row >= totalRows || col >= cols) return;
             if (matrix[row][col] !== null) { console.warn('Merge-Kollision', row, col); return; }
-            matrix[row][col] = merge; 
-            for (let 
-            
+            matrix[row][col] = merge;
+            for (let
+
             r = 0; r < rowspan; r++) {
                 for (let c = 0; c < colspan; c++) {
-                    if (r === 0 && c === 0) continue; 
-               
-                     if (row + r < totalRows && 
+                    if (r === 0 && c === 0) continue;
+
+                     if (row + r < totalRows &&
                     col + c < cols) {
-       
+
                          matrix[row + r][col + c] = 'merged-cell';
                     }
-     
+
                  }
             }
         });
         return matrix;
     }
 
+    function renderTopTable() {
+        if (!currentConfig.topTable || !currentConfig.topTable.enabled) {
+            topTablePreview.innerHTML = '';
+            bottomTablePreview.innerHTML = '';
+            topTablePreview.style.marginBottom = '0';
+            bottomTablePreview.style.marginTop = '0';
+            return;
+        }
+
+        const {
+            rows,
+            cols,
+            rowHeight,
+            cellData,
+            position,
+            bgColor,
+            fontFamily,
+            fontSize,
+            fontColor,
+            borders,
+            aligns
+        } = currentConfig.topTable;
+        const {
+            borderWidth,
+            borderColor
+        } = currentConfig;
+
+        let tableHTML = `<table style="border-collapse: collapse; table-layout: fixed; width: 100%;">`;
+        tableHTML += '<colgroup>';
+        for (let i = 0; i < cols; i++) {
+            tableHTML += `<col style="width: ${100 / cols}%;">`;
+        }
+        tableHTML += '</colgroup>';
+
+        tableHTML += '<tbody>';
+        for (let r = 0; r < rows; r++) {
+            // Die Höhe wird auf die TR gesetzt, damit table-layout:fixed sie erzwingen kann.
+            tableHTML += `<tr style="height: ${rowHeight};">`;
+            for (let c = 0; c < cols; c++) {
+                const cellId = `${r}-${c}`;
+                const cellValue = cellData && cellData[r] && cellData[r][c] ? cellData[r][c] : '';
+                const cellBorders = borders && borders[cellId] ? borders[cellId] : { top: true, right: true, bottom: true, left: true };
+                const cellAlign = aligns && aligns[cellId] ? aligns[cellId] : 'left';
+
+                // TD hat keine Höhe mehr, nur noch padding: 0.
+                let cellStyle = `
+                    background-color: ${bgColor};
+                    font-family: ${fontFamily};
+                    font-size: ${fontSize};
+                    color: ${fontColor};
+                    padding: 0;
+                    border-top: ${cellBorders.top ? `${borderWidth} solid ${borderColor}` : 'none'};
+                    border-right: ${cellBorders.right ? `${borderWidth} solid ${borderColor}` : 'none'};
+                    border-bottom: ${cellBorders.bottom ? `${borderWidth} solid ${borderColor}` : 'none'};
+                    border-left: ${cellBorders.left ? `${borderWidth} solid ${borderColor}` : 'none'};
+                `;
+                 // Der DIV wird zum Clipping-Container.
+                let divStyle = `
+                    height: 100%;
+                    width: 100%;
+                    display: flex;
+                    align-items: center;
+                    justify-content: ${cellAlign};
+                    overflow: hidden; /* Wichtig: Dieser DIV schneidet den Inhalt ab. */
+                    padding: 0 3mm;
+                `;
+                // Der contenteditable DIV füllt den äußeren DIV.
+                let editableDivStyle = `
+                    width: 100%;
+                    border: none;
+                    background-color: transparent;
+                    font-family: inherit;
+                    font-size: inherit;
+                    color: inherit;
+                    text-align: ${cellAlign};
+                    padding: 0;
+                    margin: 0;
+                    line-height: 1.2;
+                    overflow: hidden;
+                    white-space: nowrap; /* Verhindert Zeilenumbrüche, die die Höhe beeinflussen könnten */
+                `;
+                tableHTML += `<td style="${cellStyle}" data-row="${r}" data-col="${c}"><div style="${divStyle}"><div contenteditable="true" data-row="${r}" data-col="${c}" style="${editableDivStyle}">${cellValue}</div></div></td>`;
+            }
+            tableHTML += '</tr>';
+        }
+        tableHTML += '</tbody></table>';
+
+        const targetPreview = position === 'top' ? topTablePreview : bottomTablePreview;
+        const otherPreview = position === 'top' ? bottomTablePreview : topTablePreview;
+
+        targetPreview.innerHTML = tableHTML;
+        otherPreview.innerHTML = '';
+        targetPreview.style.margin = position === 'top' ? '0 0 5mm 0' : '5mm 0 0 0';
+        otherPreview.style.margin = '0';
+
+        updateTopTableCellSelectionVisuals();
+    }
+
     function renderTable() {
+        renderTopTable();
         if (!currentConfig.cols) updateConfigFromDOM();
-        const { 
-            rows, cols, rowHeight, headerRowHeight, headers, headers2, colWidths, 
+        const {
+            rows, cols, rowHeight, headerRowHeight, headers, headers2, colWidths,
             bgColorHeader, bgColorData, borderWidth, borderColor,
             headerFontFamily, headerFontSize, headerFontColor, headerAligns
         } = currentConfig;
@@ -431,29 +638,29 @@ document.addEventListener('DOMContentLoaded', () => {
         // den Hintergrund der Seite
         tablePreviewWrapper.style.backgroundColor = currentConfig.bgColorPage;
         let tableHTML = `<table style="
-            border-collapse: collapse; 
-            table-layout: fixed; 
-            width: 100%; 
+            border-collapse: collapse;
+            table-layout: fixed;
+            width: 100%;
             border: ${borderWidth} solid ${borderColor};
         ">`;
         // Table-wide border only once
-        
+
         tableHTML += '<colgroup>';
         for (const width of colWidths) {
             tableHTML += `<col style="width: ${width};">`;
         }
         tableHTML += '</colgroup>';
-        
+
         tableHTML += '<thead>';
         for (let r = 0; r < totalHeaderRows; r++) {
             tableHTML += `<tr style="height: ${headerRowHeight};">`;
             for (let c = 0; c < cols; c++) {
                 if (matrix[r][c] === 'merged-cell') continue;
                 let attrs = `data-row="${r}" data-col="${c}"`;
-                if (matrix[r][c]) { 
+                if (matrix[r][c]) {
                     attrs += ` rowspan="${matrix[r][c].rowspan}" colspan="${matrix[r][c].colspan}"`;
                 }
-                
+
                 let content = '&nbsp;';
                 let alignStyle = headerAligns && headerAligns[c] ? `text-align: ${headerAligns[c]};` : '';
                 let cellStyle = `
@@ -471,26 +678,26 @@ document.addEventListener('DOMContentLoaded', () => {
                     content = (headers2 && headers2[c]) ?
                     headers2[c] : '&nbsp;';
                 }
-                
+
                 tableHTML += `<th style="${cellStyle}" ${attrs}>${content}</th>`;
             }
             tableHTML += '</tr>';
         }
         tableHTML += '</thead>';
-        
+
         tableHTML += '<tbody>';
-        for (let r = totalHeaderRows; r < totalRows; r++) { 
+        for (let r = totalHeaderRows; r < totalRows; r++) {
             tableHTML += `<tr style="height: ${rowHeight};">`;
             for (let c = 0; c < cols; c++) {
                 if (matrix[r][c] === 'merged-cell') continue;
                 let attrs = `data-row="${r}" data-col="${c}"`;
-                if (matrix[r][c]) { 
+                if (matrix[r][c]) {
                     attrs += ` rowspan="${matrix[r][c].rowspan}" colspan="${matrix[r][c].colspan}"`;
                 }
                 let cellStyle = `
                     border: ${borderWidth} solid ${borderColor};
                     background-color: ${bgColorData};
-                    font-family: ${headerFontFamily}; 
+                    font-family: ${headerFontFamily};
                     font-size: ${headerFontSize};
                     color: ${headerFontColor};
                 `;
@@ -499,7 +706,7 @@ document.addEventListener('DOMContentLoaded', () => {
             tableHTML += '</tr>';
         }
         tableHTML += '</tbody></table>';
-        
+
         tablePreview.innerHTML = tableHTML;
         updateSelectionVisuals();
     }
@@ -512,9 +719,14 @@ document.addEventListener('DOMContentLoaded', () => {
             row: parseInt(cell.dataset.row, 10),
             col: parseInt(cell.dataset.col, 10)
         };
-        if (e.shiftKey) { selectionEnd = selection; } 
+        if (e.shiftKey) { selectionEnd = selection; }
         else { selectionStart = selection;
             selectionEnd = null; }
+
+        // Hide top table border controls if main table is clicked
+        borderControls.style.display = 'none';
+        selectedTopTableCell = null;
+        updateTopTableCellSelectionVisuals(); // Clear selection visuals from top table
         updateSelectionVisuals();
     }
     function updateSelectionVisuals() {
@@ -559,7 +771,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (mergeIndex > -1) {
             currentConfig.merges.splice(mergeIndex, 1);
             selectionStart = null;
-            renderTable(); 
+            renderTable();
         } else {
             alert('Die ausgewählte Zelle ist nicht der Startpunkt einer Verbindung.');
         }
@@ -572,25 +784,124 @@ document.addEventListener('DOMContentLoaded', () => {
             renderTable();
         }
     }
-    
+
+    function handleTopTableCellClick(e) {
+        const cell = e.target.closest('td');
+        if (!cell) {
+            // If click is outside a cell, hide controls and clear selection
+            borderControls.style.display = 'none';
+            selectedTopTableCell = null;
+            updateTopTableCellSelectionVisuals();
+            return;
+        }
+        e.stopPropagation(); // Prevent main table handler from firing
+
+        selectedTopTableCell = {
+            row: parseInt(cell.dataset.row, 10),
+            col: parseInt(cell.dataset.col, 10)
+        };
+
+        // Clear main table selection
+        selectionStart = null;
+        selectionEnd = null;
+        updateSelectionVisuals();
+
+        updateTopTableCellSelectionVisuals();
+        showBorderControls(cell);
+    }
+
+    function updateTopTableCellSelectionVisuals() {
+        const allCells = document.querySelectorAll('#top-table-preview td, #bottom-table-preview td');
+        allCells.forEach(c => c.classList.remove('selection-start'));
+
+        if (selectedTopTableCell) {
+            const { row, col } = selectedTopTableCell;
+            const container = currentConfig.topTable.position === 'top' ? topTablePreview : bottomTablePreview;
+            const selectedCell = container.querySelector(`td[data-row="${row}"][data-col="${col}"]`);
+            if (selectedCell) {
+                selectedCell.classList.add('selection-start');
+            }
+        }
+    }
+
+    function showBorderControls(cell) {
+        const rect = cell.getBoundingClientRect();
+        borderControls.style.display = 'block';
+        borderControls.dataset.collapsed = 'false';
+        borderControls.style.top = `${window.scrollY + rect.bottom + 5}px`;
+        borderControls.style.left = `${window.scrollX + rect.left}px`;
+
+        const cellId = `${selectedTopTableCell.row}-${selectedTopTableCell.col}`;
+        const borders = currentConfig.topTable.borders[cellId] || { top: true, right: true, bottom: true, left: true };
+        const align = currentConfig.topTable.aligns[cellId] || 'left';
+
+        borderTopCheckbox.checked = borders.top;
+        borderRightCheckbox.checked = borders.right;
+        borderBottomCheckbox.checked = borders.bottom;
+        borderLeftCheckbox.checked = borders.left;
+
+        [alignLeftButton, alignCenterButton, alignRightButton].forEach(btn => btn.classList.remove('primary'));
+        if (align === 'left') alignLeftButton.classList.add('primary');
+        if (align === 'center') alignCenterButton.classList.add('primary');
+        if (align === 'right') alignRightButton.classList.add('primary');
+    }
+
+    function updateBorders() {
+        if (!selectedTopTableCell) return;
+
+        const cellId = `${selectedTopTableCell.row}-${selectedTopTableCell.col}`;
+
+        if (!currentConfig.topTable.borders) {
+            currentConfig.topTable.borders = {};
+        }
+        if (!currentConfig.topTable.borders[cellId]) {
+            currentConfig.topTable.borders[cellId] = { top: true, right: true, bottom: true, left: true };
+        }
+
+        currentConfig.topTable.borders[cellId] = {
+            top: borderTopCheckbox.checked,
+            right: borderRightCheckbox.checked,
+            bottom: borderBottomCheckbox.checked,
+            left: borderLeftCheckbox.checked
+        };
+
+        renderTopTable();
+    }
+
+    function updateAlignment(align) {
+        if (!selectedTopTableCell) return;
+
+        const cellId = `${selectedTopTableCell.row}-${selectedTopTableCell.col}`;
+        if (!currentConfig.topTable.aligns) {
+            currentConfig.topTable.aligns = {};
+        }
+        currentConfig.topTable.aligns[cellId] = align;
+
+        renderTopTable();
+        // Re-show controls to update button highlighting
+        const container = currentConfig.topTable.position === 'top' ? topTablePreview : bottomTablePreview;
+        const selectedCell = container.querySelector(`td[data-row="${selectedTopTableCell.row}"][data-col="${selectedTopTableCell.col}"]`);
+        if (selectedCell) showBorderControls(selectedCell);
+    }
+
     // --- Druck- & Berechnungs-Logik ---
     function calculateMaxRows() {
         updateConfigFromDOM();
         const config = currentConfig; // Frische Konfiguration holen
         const size = config.printSize;
         const orientation = config.printOrientation;
-        
+
         if (!PAGE_DIMENSIONS_MM[size] || !PAGE_DIMENSIONS_MM[size][orientation]) {
             console.error('Druckformat unbekannt:', size, orientation);
             return;
         }
 
         const pageHeight = PAGE_DIMENSIONS_MM[size][orientation].h;
-        
+
         const marginTop = parseFloat(config.marginTop) || 0;
         const marginBottom = parseFloat(config.marginBottom) || 0;
-        const usableHeight = pageHeight - (marginTop + marginBottom); 
-        
+        const usableHeight = pageHeight - (marginTop + marginBottom);
+
         const dataRowHeight = parseFloat(config.rowHeight);
         const headerRowHeight = parseFloat(config.headerRowHeight);
         const totalHeaderRows = config.headerRows || 1;
@@ -598,37 +909,46 @@ document.addEventListener('DOMContentLoaded', () => {
              alert('Bitte eine gültige Zeilenhöhe für Header UND Daten in mm angeben.');
              return;
         }
-        
+
         // --- KORREKTUR: Logo-Platz berücksichtigen ---
         let logoSpace = 0;
         const logoHeightMM = parseFloat(config.logoHeight);
-        
+
         if (config.logoFile && !isNaN(logoHeightMM)) {
             // Logo-Höhe + 5mm Puffer (konsistent mit Druck-CSS 'calc(${config.logoHeight} + 5mm)')
             logoSpace = logoHeightMM + 5.0;
         }
         // --- ENDE KORREKTUR ---
 
+        let topTableSpace = 0;
+        if (config.topTable.enabled) {
+            const topTableRows = config.topTable.rows;
+            const topTableRowHeight = parseFloat(config.topTable.rowHeight);
+            if (!isNaN(topTableRowHeight) && topTableRowHeight > 0) {
+                topTableSpace = topTableRows * topTableRowHeight + 5; // 5mm margin
+            }
+        }
+
         const headerSpace = totalHeaderRows * headerRowHeight;
         // Verfügbare Höhe für Datenzeilen ist die nutzbare Höhe minus Header UND Logo-Platz
-        const heightForData = usableHeight - headerSpace - logoSpace;
+        const heightForData = usableHeight - headerSpace - logoSpace - topTableSpace;
         const EPSILON = 0.1; // Toleranz für Fließkomma-Ungenauigkeiten
         const maxDataRows = Math.floor((heightForData - EPSILON) / dataRowHeight);
         // Sicherstellen, dass der Wert nicht negativ ist
         rowsInput.value = maxDataRows >= 0 ?
         maxDataRows : 0;
-        
+
         // Konfiguration aktualisieren (wird beim nächsten updateConfigFromDOM() sowieso überschrieben,
         // aber gut für renderTable())
         currentConfig.rows = maxDataRows >= 0 ?
         maxDataRows : 0;
         renderTable();
     }
-    
+
     function handlePrint() {
         updateConfigFromDOM();
         const config = currentConfig;
-        
+
         let dynamicHeaderAlignsCss = '';
         for (let i = 0; i < config.cols; i++) {
             // --- KORREKTUR: Syntaxfehler behoben ---
@@ -643,9 +963,9 @@ document.addEventListener('DOMContentLoaded', () => {
             @media print{
             @page {
                 size: ${config.printSize} ${config.printOrientation};
-                margin: 0; 
+                margin: 0;
             }
-            
+
             body {
                 background-color: ${config.bgColorPage};
                 -webkit-print-color-adjust: exact;
@@ -660,7 +980,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 padding-bottom: ${config.marginBottom};
                 padding-left: ${config.marginLeft};
                 padding-right: ${config.marginRight};
-                box-sizing: border-box; 
+                box-sizing: border-box;
                 display: block;
                 width: 100%;
                 height: 100%;
@@ -674,10 +994,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 left: ${config.marginLeft};
                 right: ${config.marginRight};
-                
+
                 /* Höhe wird durch Bild bestimmt, Ausrichtung ist hier */
                 height: ${config.logoHeight};
-                text-align: ${config.logoAlign}; 
+                text-align: ${config.logoAlign};
 
                 ${!config.logoFile ? 'display: none;' : ''}
             }
@@ -689,13 +1009,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
             #table-preview table {
                 border-collapse: collapse;
-                table-layout: fixed; 
-                width: 100%; 
+                table-layout: fixed;
+                width: 100%;
                 border: ${config.borderWidth} solid ${config.borderColor};
                 font-family: ${config.headerFontFamily};
                 font-size: ${config.headerFontSize};
                 color: ${config.headerFontColor};
-                /* NEU: Die Tabelle (innerhalb des Wrappers) braucht einen Abstand von oben, 
+                /* NEU: Die Tabelle (innerhalb des Wrappers) braucht einen Abstand von oben,
                    um Platz für das (jetzt absolute) Logo zu schaffen.
                 5mm Puffer zwischen Logo und Tabelle. */
                 margin-top: ${config.logoFile ?
@@ -712,7 +1032,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 border: ${config.borderWidth} solid ${config.borderColor};
                 padding: 2mm 3mm; /* Standard-Padding für alle Zellen */
             }
-            
+
             #table-preview th {
                 background-color: ${config.bgColorHeader};
             }
@@ -753,7 +1073,7 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const response = await fetch(`${API_URL}?action=list`);
             if (!response.ok) throw new Error('Netzwerkfehler');
-            
+
             const layoutNames = await response.json();
             // Erwartet: ["Layout A", "Layout B"] (was die neue api.php jetzt sendet)
             layoutSelect.innerHTML = '<option value="">-- Layout wählen --</option>';
@@ -775,16 +1095,16 @@ document.addEventListener('DOMContentLoaded', () => {
             // Sendet 'name'
             const response = await fetch(`${API_URL}?action=load&name=${encodeURIComponent(name)}`);
             if (!response.ok) throw new Error('Layout nicht gefunden');
-            
+
             // KORREKTUR: Die API (file-based) sendet reinen Text (den Inhalt der JSON-Datei)
             const configString = await response.text();
             // Wir müssen den Text manuell in ein JSON-Objekt umwandeln
             const config = JSON.parse(configString);
-            applyConfig(config); 
+            applyConfig(config);
             layoutNameInput.value = name;
             // Setzt den Namen in das Speicherfeld
-            
-        } catch (error) { 
+
+        } catch (error) {
             console.error('Ladefehler:', error);
             if (error instanceof SyntaxError) {
                 // Dieser Fehler passiert, wenn die geladene JSON-Datei kaputt ist
@@ -816,7 +1136,7 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const response = await fetch(API_URL, { method: 'POST', body: formData });
             if (!response.ok) throw new Error('Fehler beim Speichern');
-            
+
             // Die neue api.php sendet {success: true, name: "..."}
             await response.json();
             alert(`Layout "${name}" gespeichert!`);
@@ -833,7 +1153,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const name = layoutSelect.value;
         if (!name) return;
         if (!confirm(`Wollen Sie das Server-Layout "${name}" wirklich löschen?`)) return;
-        
+
         const formData = new FormData();
         formData.append('action', 'delete');
         formData.append('name', name); // 'name' senden
@@ -841,7 +1161,7 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const response = await fetch(API_URL, { method: 'POST', body: formData });
             if (!response.ok) throw new Error('Fehler beim Löschen');
-            
+
             await response.json();
             alert(`Layout "${name}" gelöscht.`);
             layoutNameInput.value = '';
@@ -849,7 +1169,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (error) { console.error('Löschfehler:', error); alert('Fehler: Layout konnte nicht gelöscht werden.');
         }
     }
-    
+
     // --- NEU: Import / Export Funktionen ---
 
     /**
@@ -858,12 +1178,12 @@ document.addEventListener('DOMContentLoaded', () => {
     function downloadLayout() {
         updateConfigFromDOM();
         // Sicherstellen, dass die Konfiguration aktuell ist
-        
+
         const jsonString = JSON.stringify(currentConfig, null, 2);
         // (null, 2) für "pretty print"
         const blob = new Blob([jsonString], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
-        
+
         const a = document.createElement('a');
         a.href = url;
         // Dateiname aus dem Input-Feld oder Standard
@@ -871,7 +1191,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!fileName.endsWith('.json')) {
             fileName += '.json';
         }
-        
+
         a.download = fileName;
         document.body.appendChild(a);
         // Nötig für Firefox
@@ -890,7 +1210,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!file) return;
 
         const reader = new FileReader();
-        
+
         reader.onload = (e) => {
             const content = e.target.result;
             try {
@@ -911,9 +1231,9 @@ document.addEventListener('DOMContentLoaded', () => {
             alert('Fehler beim Lesen der Datei.');
             console.error("FileReader Error:", reader.error);
         };
-        
+
         reader.readAsText(file);
-        
+
         // Wichtig: Input-Wert zurücksetzen, damit dieselbe Datei erneut geladen werden kann
         fileUploadInput.value = null;
     }
